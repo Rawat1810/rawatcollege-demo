@@ -1,1 +1,1 @@
-print("Building Project")
+system.out.println("Building Project")
