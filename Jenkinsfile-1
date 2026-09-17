@@ -10,14 +10,24 @@ pipeline {
         stage('Checkout') {
             steps {
                 echo 'Checking out code from Git'
+
                 checkout scm
             }
         }
 
         stage('Verify Java & Maven') {
             steps {
+                echo 'Checking Java and Maven versions'
+
                 bat '''
+                    echo ==============================
+                    echo JAVA VERSION
+                    echo ==============================
                     java -version
+
+                    echo ==============================
+                    echo MAVEN VERSION
+                    echo ==============================
                     mvn -version
                 '''
             }
@@ -25,27 +35,37 @@ pipeline {
 
         stage('Clean') {
             steps {
+                echo 'Cleaning Maven project'
+
                 bat 'mvn clean'
             }
         }
 
         stage('Run Automation Tests') {
             steps {
+                echo 'Running Java Automation Tests'
+
                 bat 'mvn test'
             }
         }
 
         stage('Generate Allure Report') {
             steps {
+                echo 'Generating Allure Report'
+
                 bat 'mvn allure:report'
             }
         }
 
         stage('Publish Allure Report') {
             steps {
+                echo 'Publishing Allure Report'
+
                 allure([
                     includeProperties: false,
-                    results: [[path: 'target/allure-results']]
+                    results: [
+                        [path: 'target/allure-results']
+                    ]
                 ])
             }
         }
@@ -54,6 +74,19 @@ pipeline {
     post {
         always {
             echo 'Test execution completed'
+        }
+
+        success {
+            echo '=============================='
+            echo 'BUILD SUCCESSFUL'
+            echo '=============================='
+        }
+
+        failure {
+            echo '=============================='
+            echo 'BUILD FAILED'
+            echo 'Please check the Jenkins console log.'
+            echo '=============================='
         }
     }
 }
