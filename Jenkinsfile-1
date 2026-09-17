@@ -1,0 +1,55 @@
+pipeline {
+    agent any
+
+    stages {
+
+        stage('Checkout') {
+            steps {
+                echo 'Checking out code from Git'
+                checkout scm
+            }
+        }
+
+        stage('Verify Java & Maven') {
+            steps {
+                sh '''
+                    java -version
+                    mvn -version
+                '''
+            }
+        }
+
+        stage('Clean') {
+            steps {
+                sh 'mvn clean'
+            }
+        }
+
+        stage('Run Automation Tests') {
+            steps {
+                sh 'mvn test'
+            }
+        }
+
+        stage('Generate Allure Report') {
+            steps {
+                sh 'mvn allure:report'
+            }
+        }
+
+        stage('Publish Allure Report') {
+            steps {
+                allure([
+                    includeProperties: false,
+                    results: [[path: 'target/allure-results']]
+                ])
+            }
+        }
+    }
+
+    post {
+        always {
+            echo 'Test execution completed'
+        }
+    }
+}
